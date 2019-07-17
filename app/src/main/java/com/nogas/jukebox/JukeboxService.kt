@@ -1,8 +1,10 @@
 package com.nogas.jukebox
 
-import android.app.Service
+import android.app.*
+import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.IBinder
 
 class JukeboxService : Service() {
@@ -12,6 +14,10 @@ class JukeboxService : Service() {
         const val PLAY_INDEX_ACTION = "PlayIndex"
         const val NEXT_TRACK_ACTION = "Next"
         const val STOP_ACTION = "Stop"
+        // constante para el ID de la notificacion
+        const val JUKEBOX_NOTIFICATION_ID = 1935
+        // constante para manejar los canales de comunicacion (para las NOTIFICACIONES)
+        const val JUKEBOX_NOTIFICATION_NAME = "nogasJukebox"
 
     }
 
@@ -22,6 +28,9 @@ class JukeboxService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         songs = resources.getStringArray(R.array.song_titles)
+
+        // llamando a nuestra FUNCION de NOTIFICACION
+        makePlayerNotification()
 
         if (intent?.action == JukeboxService.PLAY_ACTION){
             playNextSong()
@@ -36,6 +45,96 @@ class JukeboxService : Service() {
         }
 
         return START_STICKY
+    }
+
+
+    //  creates a Notification that will "stick around"
+    //  with play/stop/.. buttons on it.
+    private fun makePlayerNotification(){
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+
+            val channel = NotificationChannel(
+                JUKEBOX_NOTIFICATION_ID.toString(),
+                JUKEBOX_NOTIFICATION_NAME,
+                NotificationManager.IMPORTANCE_DEFAULT)
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE)
+                    as NotificationManager
+            manager.createNotificationChannel(channel)
+            val builder = Notification.Builder(this, JUKEBOX_NOTIFICATION_NAME)
+
+            // ESTE ES EL CODIGO base para crear una notificacion
+
+            builder.setContentTitle("tittle")
+                .setContentTitle("text")
+                .setAutoCancel(true)
+                .setSmallIcon(R.drawable.jukebox)
+
+            val stopIntent = Intent(this,JukeboxService::class.java)
+            stopIntent.action = STOP_ACTION
+
+            val pending = PendingIntent.getService(
+                this,0,stopIntent,0
+            )
+
+
+            // CODIGO PARA MULTIPLES ACCIONES:
+
+            val stopAction = Notification.Action.Builder(
+                R.drawable.stop_icon,
+                "Stop",
+                pending
+            ).build()
+
+            builder.addAction(stopAction)
+
+            val notification = builder.build()
+            manager.notify(JUKEBOX_NOTIFICATION_ID,notification)
+
+
+
+        }
+        else{
+
+            // ESTE ES EL CODIGO base para crear una notificacion
+
+            val builder = Notification.Builder(this)
+                .setContentTitle("titte")
+                .setContentTitle("text")
+                .setAutoCancel(true)
+                .setSmallIcon(R.drawable.jukebox)
+
+            val stopIntent = Intent(this,JukeboxService::class.java)
+            stopIntent.action = STOP_ACTION
+
+            val pending = PendingIntent.getService(
+                this,0,stopIntent,0
+            )
+
+
+            // CODIGO PARA MULTIPLES ACCIONES:
+
+            val stopAction = Notification.Action.Builder(
+                R.drawable.stop_icon,
+                "Stop",
+                pending
+            ).build()
+
+            builder.addAction(stopAction)
+
+
+
+
+            val notification = builder.build()
+
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE)
+                    as NotificationManager
+            manager.notify(JUKEBOX_NOTIFICATION_ID,notification)
+
+
+
+        }
+
     }
 
     override fun onBind(intent: Intent): IBinder {
