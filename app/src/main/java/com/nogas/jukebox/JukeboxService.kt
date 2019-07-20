@@ -55,7 +55,7 @@ class JukeboxService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
 
             val channel = NotificationChannel(
-                JUKEBOX_NOTIFICATION_ID.toString(),
+                JUKEBOX_NOTIFICATION_NAME,
                 JUKEBOX_NOTIFICATION_NAME,
                 NotificationManager.IMPORTANCE_DEFAULT)
             val manager = getSystemService(Context.NOTIFICATION_SERVICE)
@@ -138,7 +138,7 @@ class JukeboxService : Service() {
     }
 
     override fun onBind(intent: Intent): IBinder {
-        TODO("Return the communication channel to the service.")
+       TODO("Return the communication channel to the service.")
     }
 
     //Plays the track at the given index.
